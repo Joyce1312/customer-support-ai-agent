@@ -300,8 +300,8 @@ agentcore invoke '{"prompt": "I am a Gold member with 4250 points. Calculate my 
 ### Test 6 — Browser Tool
 
 ```bash
-agentcore invoke '{"prompt": "Go to https://www.amazon.com and tell me the page title.", "customer_id": "CUST-123", "session_id": "t6"}'
-# Expected: page title retrieved from live Amazon.com
+agentcore invoke '{"prompt": "Go to https://www.udacity.com and tell me the page title.", "customer_id": "CUST-123", "session_id": "t6"}'
+# Expected: page title retrieved from live Udacity.com
 ```
 
 ---
