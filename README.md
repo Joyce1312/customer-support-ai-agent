@@ -39,7 +39,7 @@ After completing this project you will be able to:
   - IAM roles and policies
   - Lambda functions
   - API Gateway REST APIs
-  - Amazon Bedrock Knowledge Bases (with S3 and OpenSearch access)
+  - Amazon Bedrock Managed Knowledge Bases (with S3 access)
   - Amazon Bedrock AgentCore resources (Runtime, Gateway, Memory)
 - All resources should be created in **us-east-1** (N. Virginia) unless stated otherwise.
 
@@ -73,6 +73,7 @@ Enable the following model in the Amazon Bedrock console under **Model access**:
 project/
 └── starter/
     ├── main.py                  ← your starting point (fill in the TODOs)
+    ├── setup_permissions.py     ← run after deployment to configure the agent role
     ├── pyproject.toml           ← Python dependencies
     ├── product_catalog.txt      ← upload to the Knowledge Base
     └── lambda/
@@ -92,8 +93,11 @@ Complete these steps **before** writing any agent code.
 ```bash
 # From the repository root
 cd starter
-uv sync
+uv sync --python 3.13
 ```
+
+Run the `agentcore` commands below from `starter/` using `uv run agentcore`
+if your virtual environment is not activated.
 
 ### Step 1.2 — Deploy the Lambda Functions
 
@@ -155,12 +159,14 @@ npx @modelcontextprotocol/inspector
 ### Step 1.4 — Create the Knowledge Base
 
 1. Upload `starter/product_catalog.txt` to an **S3 bucket** in your account.
-2. In the Bedrock console → **Knowledge Bases**, create a new Knowledge Base:
+2. In **Amazon Bedrock AgentCore → Built-in tools → Knowledge Base**, choose
+   **Create Managed Knowledge Base**:
    - Name: `CustomerSupportKB`
-   - Data source: the S3 bucket from above
-   - Embeddings model: Amazon Titan Embeddings v2
-   - Vector store: Amazon OpenSearch Serverless (auto-created)
-3. **Sync** the data source.
+   - Embedding model type: **Managed**
+   - Service role: let the console create a new role
+   - Data source: the S3 bucket and `product_catalog.txt` from above
+   - Use the default encryption settings
+3. **Sync** the data source and wait for the sync to complete.
 4. Copy the **Knowledge Base ID** — paste it into `KB_ID` in your `main.py`.
 
 **Verify:**
@@ -181,7 +187,7 @@ npx @modelcontextprotocol/inspector
    | Semantic extraction | `customer_facts` | `cs_agent/{actorId}/facts` |
    | User preference | `customer_preferences` | `cs_agent/{actorId}/preferences` |
 
-3. Copy the **Memory ID** — paste it into `MEMORY_ID` in your `main.py`.
+3. Wait until the memory is **ACTIVE**, then copy its **Memory ID** into `MEMORY_ID` in `main.py`. If an initial invocation reports that memory is not active, wait a few minutes and retry.
 
 ---
 
@@ -241,12 +247,29 @@ Implement the `invoke(payload, context)` function:
 
 ```bash
 # Configure the Starter Toolkit CLI (first time only)
-agentcore configure --entrypoint main.py --name <your-agent-name>
+agentcore configure --entrypoint main.py --name <your-agent-name> --deployment-type direct_code_deploy --runtime PYTHON_3_13 --disable-memory
 
 # Deploy the agent
 agentcore deploy
+```
 
-# Invoke the deployed agent
+`--disable-memory` disables only the toolkit's automatic memory creation; your
+agent uses the memory you created in Step 1.5. Let the toolkit create the runtime
+execution role when prompted.
+
+After deployment, run this from `starter/` using your student AWS credentials.
+Make sure `KB_ID`, `MEMORY_ID` and `REGION` are filled in as strings in `main.py`:
+
+```bash
+uv run setup_permissions.py
+```
+
+This grants the agent access to your KB, memory and browser. Rerun it if you
+change your resource IDs or execution role.
+
+Wait briefly for the policy to take effect, then invoke the deployed agent:
+
+```bash
 agentcore invoke '{"prompt": "Hello, what can you help me with?", "customer_id": "CUST-123", "session_id": "test-1"}'
 ```
 
