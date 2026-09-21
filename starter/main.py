@@ -4,8 +4,8 @@ Customer Support AI Agent — Starter Code
 Your task is to complete this file by implementing all sections marked
 with # TODO comments.
 
-Reference the step-by-step solution files and INSTRUCTIONS.md for guidance.
-Do NOT copy the solution directly — work through each section yourself.
+Reference the project instructions and rubric for guidance.
+Work through each section yourself.
 
 Run locally (after filling in config values):
   uv run main.py '{"prompt": "Hello", "customer_id": "CUST-123", "session_id": "s1"}'
@@ -57,9 +57,11 @@ os.environ["BYPASS_TOOL_CONSENT"] = "true"
 
 # ── TODO 2 — Configuration ────────────────────────────────────────────────────
 # Replace the placeholder strings with your actual AWS resource values.
-# You collected these in Part 1 of the INSTRUCTIONS.
+# You collected these in the infrastructure setup section of the project instructions.
 #
 # GATEWAY_URL format: https://<alias>.gateway.bedrock-agentcore.<region>.amazonaws.com/mcp
+# This starter uses an unsigned MCP connection and therefore assumes the
+# project Gateway is configured with the NONE authorizer.
 # KB_ID       format: 10-character alphanumeric string from the KB console
 # REGION:     your AWS region, e.g. "us-east-1"
 # MEMORY_ID   format: shown in the AgentCore Memory console
@@ -96,7 +98,9 @@ _bedrock_runtime = None  # Replace this line
 #
 # Steps:
 #   1. Call mem_client.get_memory_strategies(memory_id) to get strategy list
-#   2. Return a dict: { strategy["type"]: strategy["namespaces"][0] for each strategy }
+#   2. Read the namespace from strategy["namespaceTemplates"][0].
+#      For compatibility with older AgentCore responses, fall back to
+#      strategy["namespaces"][0] when namespaceTemplates is absent.
 #
 # Example output:
 #   { "SEMANTIC": "cs_agent/{actorId}/facts",
