@@ -1,0 +1,228 @@
+CUSTOMER SUPPORT AI AGENT — TEST CONVERSATION LOG
+==================================================
+
+All tests below were executed against the deployed Amazon Bedrock AgentCore
+runtime for customer_support_agent.
+
+
+==================================================
+TEST 1 — AGENTCORE DEPLOYMENT + API-BASED GATEWAY TOOL
+==================================================
+
+Command:
+agentcore invoke '{"prompt": "Can you track order ORD-001?", "customer_id": "CUST-123", "session_id": "t1-review"}'
+
+AgentCore Response:
+Your order ORD-001 is SHIPPED:
+
+- Item: Wireless Headphones Pro ($89.99)
+- Tracking: UPS #TRK987654321
+- Estimated delivery: September 25, 2026
+
+Gateway Tool Evidence:
+Tool #1: order-tracker___get_order
+
+Tool Response:
+Your order ORD-001 is SHIPPED:
+- Item: Wireless Headphones Pro ($89.99)
+- Tracking: UPS #TRK987654321
+- Estimated delivery: September 25, 2026
+
+Runtime Result:
+Invocation completed successfully
+
+RESULT: PASS
+
+This demonstrates:
+- Successful invocation of the deployed AgentCore runtime.
+- Successful invocation of the API-based Gateway tool.
+- The Gateway tool returned a nonempty, meaningful response.
+
+Evidence Screenshots:
+- test_evidence/Test_1.png
+- test_evidence/Test_1_Log.png
+
+
+==================================================
+TEST 2 — LAMBDA-BASED GATEWAY TOOL
+==================================================
+
+Command:
+agentcore invoke '{"prompt": "I want to return my Kindle Paperwhite (ORD-002). Please initiate a refund.", "customer_id": "CUST-123", "session_id": "t2-review"}'
+
+AgentCore Response:
+Your refund for the Kindle Paperwhite (ORD-002) has been approved!
+
+- Refund ID: REF-BNUCPBU7
+- Amount: $139.99
+- Timeline: Credit will appear in your account within 3-5 business days.
+
+Gateway Tool Evidence:
+Tool #1: refund-processor___initiate_refund
+
+Tool Response:
+Your refund for the Kindle Paperwhite (ORD-002) has been approved!
+- Refund ID: REF-BNUCPBU7
+- Amount: $139.99
+- Timeline: Credit will appear in your account within 3-5 business days.
+
+Runtime Result:
+Invocation completed successfully
+
+RESULT: PASS
+
+This demonstrates:
+- Successful invocation of the Lambda-based Gateway tool.
+- The Gateway tool returned a nonempty, meaningful response.
+
+Evidence Screenshots:
+- test_evidence/Test_2.png
+- test_evidence/Test_2_log.png
+
+
+==================================================
+TEST 3 — KNOWLEDGE BASE / RAG
+==================================================
+
+Command:
+agentcore invoke '{"prompt": "What are the benefits of the Platinum loyalty tier?", "customer_id": "CUST-123", "session_id": "t3"}'
+
+AgentCore Response:
+Platinum Loyalty Tier Benefits:
+
+As a Platinum member (with 5000 or more points), benefits include:
+- Free same-day shipping on eligible orders
+- 15% discount on purchases
+- Priority customer support
+
+Points earning:
+- Standard items: 1 point per $1 spent
+- Amazon devices: 2 points per $1 spent
+- Amazon Fresh: 5 points per $1 spent
+
+Points redemption:
+- 100 points = $1 discount
+- Minimum redemption: 500 points
+- Points valid for 2 years
+
+RESULT: PASS
+
+This demonstrates:
+- The deployed agent successfully answered a product/policy question using the configured Knowledge Base.
+
+Evidence Screenshot:
+- test_evidence/Test_3.png
+
+
+==================================================
+TEST 4 — CROSS-SESSION AGENT MEMORY
+==================================================
+
+Session A Command:
+agentcore invoke '{"prompt": "Hi, I am Jane. I prefer concise responses.", "customer_id": "CUST-123", "session_id": "s-A"}'
+
+Information provided in Session A:
+- Name: Jane
+- Communication preference: concise responses
+
+
+Session B Command:
+agentcore invoke '{"prompt": "Do you remember my name and communication preference?", "customer_id": "CUST-123", "session_id": "s-B"}'
+
+AgentCore Response:
+Hello Jane! Yes, I remember your name and that you prefer concise responses.
+
+RESULT: PASS
+
+This demonstrates:
+- Two separate sessions were used: s-A and s-B.
+- Both sessions used the same customer ID: CUST-123.
+- Information provided in Session A was successfully retrieved in Session B.
+- Cross-session AgentCore memory retrieval and persistence worked successfully.
+
+Evidence Screenshots:
+- test_evidence/Test_4_part_1.png
+- test_evidence/Test_4_part_2.png
+
+
+==================================================
+TEST 5 — CODE INTERPRETER / LOYALTY DISCOUNT
+==================================================
+
+Command:
+agentcore invoke '{"prompt": "I am a Gold member with 4250 points. Calculate my discount on a $150 standard order.", "customer_id": "CUST-123", "session_id": "t5"}'
+
+AgentCore Response:
+Loyalty Discount Calculation:
+
+- Points Discount: $40 (4,000 points redeemed)
+- Tier Discount: $11.00
+- Total Savings: $51.00
+- Final Total: $99.00
+- Points Earned: 99
+- Remaining Points Balance: 349
+
+RESULT: PASS
+
+This demonstrates:
+- The deployed agent successfully performed the loyalty discount calculation.
+- Points redemption and the Gold tier discount were applied sequentially.
+- The calculation returned the expected final total and remaining points balance.
+
+Evidence Screenshot:
+- test_evidence/Test_5.png
+
+
+==================================================
+TEST 6 — AGENTCORE BROWSER / LIVE WEB PAGE
+==================================================
+
+Command:
+agentcore invoke '{"prompt": "Go to https://www.udacity.com and tell me the page title.", "customer_id": "CUST-123", "session_id": "t6-review"}'
+
+AgentCore Response:
+The page title of https://www.udacity.com is:
+
+"Learn the Latest Tech Skills; Advance Your Career | Udacity"
+
+Browser Tool Evidence:
+Tool #1: browser
+Tool #2: browser
+Tool #3: browser
+Tool #4: browser
+Tool #5: browser
+
+Browser Result:
+The page title of https://www.udacity.com is:
+
+"Learn the Latest Tech Skills; Advance Your Career | Udacity"
+
+Runtime Result:
+Invocation completed successfully
+
+RESULT: PASS
+
+This demonstrates:
+- The deployed agent successfully invoked the AgentCore Browser tool.
+- The browser retrieved content from a live web page.
+- The agent returned the page title from https://www.udacity.com.
+- The browser invocation completed successfully.
+
+Evidence Screenshots:
+- test_evidence/Test_6.png
+- test_evidence/Test_6_log.png
+
+==================================================
+TEST SUMMARY
+==================================================
+
+PASS — Deployed Amazon Bedrock AgentCore runtime invocation
+PASS — API-based Gateway tool: order-tracker___get_order
+PASS — Lambda-based Gateway tool: refund-processor___initiate_refund
+PASS — Knowledge Base / RAG retrieval
+PASS — Cross-session AgentCore memory
+PASS — Code Interpreter loyalty calculation
+PASS — AgentCore Browser live web retrieval
+
+Supporting screenshots for these tests are included in the
+test_evidence folder.
